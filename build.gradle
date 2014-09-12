@@ -1,0 +1,21 @@
+apply plugin: 'java'
+apply from: 'gradle/scripts/cucumber.gradle'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile(
+            "info.cukes:cucumber-junit:${cucumberVersion}",
+            "info.cukes:cucumber-java:${cucumberVersion}",
+            "info.cukes:cucumber-jvm:${cucumberVersion}",
+    )
+
+}
+
+sourceCompatibility = 1.7
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}

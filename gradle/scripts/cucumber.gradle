@@ -1,0 +1,43 @@
+
+task cucumber(description: 'Runs the cucumber tests.', group: 'Cucumber') {
+    dependsOn assemble, compileTestJava
+
+    file("build/json/").mkdirs()
+    file("build/xml/").mkdirs()
+
+    doLast {
+        def argList = [
+                '--format', 'pretty',
+                "--format", "html:${buildDir}/cucumber/html/",
+                "--format", "json:${buildDir}/cucumber/json/cucumber.json",
+                "--format", "junit:${buildDir}/cucumber/xml/cucumber.xml",
+                '--glue', 'classpath:de/axelspringer/asms/art/cucumber/steps',
+        ]
+
+        /**
+         * tags is a String that contains elements that will go directly into the argList.
+         *
+         * eg:
+         * ./gradlew -PadditionalArgs="--tags @foo,@bar --tags @baz --tags @qux"
+         *
+         * would result in these parameters
+         *   --tags @foo,@bar
+         *   --tags @baz
+         *   --tags @qux
+         */
+        if (project.hasProperty('additionalArgs') && additionalArgs instanceof String) {
+            def argString = (String) additionalArgs;
+            argList.addAll(argString.split(" "))
+        }
+
+        def allFeaturesDir = "${sourceSets.test.resources.srcDirs.iterator().next()}/features/"
+        def featureToRun = project.hasProperty('feature') ? allFeaturesDir.plus(feature) : allFeaturesDir
+        argList.add(featureToRun)
+
+        javaexec {
+            main = "cucumber.api.cli.Main"
+            classpath = configurations.testRuntime + sourceSets.main.output + sourceSets.test.output
+            args = argList
+        }
+    }
+}
